@@ -1,0 +1,28 @@
+
+
+
+Allgemein:
+
+    Essen kriegen hohen Wert
+    Entfernung zu Essen Vergrößern, kriegt downrating
+    Entfernung verringern = uprating
+    Häufige Richtungswechsel = downrating
+
+
+Position an Wand:
+    Bewegung richtung wand maximales downrating
+    
+Position an Körper(direkt):
+    Bewegung richtung Körper maximales downrating
+    Bewegung weg vom Körper uprating
+
+
+Modellierung der Welt:
+
+    modellierst das feld als 2d array
+
+    besetzte felder = 1
+    leere felder = 0
+    essen = 2
+    wand = -1
+
