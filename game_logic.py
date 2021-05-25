@@ -1,15 +1,18 @@
 import turtle 
 import random as r
 import time
+from environment import Environment as env
 
 class Game_logic:
 
-    def __init__(self,snake,screen):
+    def __init__(self,snake,screen,agent,food,environment):
         self.wall_coordinates = []
         self.screen = screen
         self.snake = snake
         self.score = 0
-        self.food = None
+        self.agent = agent
+        self.food = food
+        self.env = environment
 
     def wallHit(self):
         for coordinate in self.wall_coordinates:
@@ -24,30 +27,11 @@ class Game_logic:
                         text=f"Your Score: {self.score}")
 
     def checkFoodEaten(self):
-        if self.food.distance(self.snake.snake[0]) < 15:
+        if self.food.food.distance(self.snake.snake[0]) < 15:
             self.refreshScore()
             self.snake.addPart()
-            self.placeFood()
+            self.food.placeFood()
     
-    def placeFood(self):
-        food_coordinate = self.generateFoodCoordinate()
-        if self.food == None:
-            food = turtle.Turtle("square")
-            food.penup()
-            food.color("yellow")
-            food.setpos(food_coordinate)
-            self.food = food
-        else:
-            while(food_coordinate in self.snake.snake_coordinates):
-                food_coordinate = self.generateFoodCoordinate()
-            self.food.setpos(food_coordinate)        
-
-
-    def generateFoodCoordinate(self):
-        x = r.randrange(-280, 280, 20)
-        y = r.randrange(-280, 280, 20)
-        return (x,y)
-
     def createWall_part(self,i,j):
         wall_part = turtle.Turtle("square")
         wall_part.color("white")
@@ -72,7 +56,7 @@ class Game_logic:
         self.screen.tracer(0)
         self.screen.getcanvas().create_text(-75,-350,fill="white",font="Times 20 italic bold",
                         text=f"Your Score: {0}")
-        self.placeFood()
+        self.food.placeFood()
         self.createWall()
         self.gameLoop()
 
@@ -85,4 +69,6 @@ class Game_logic:
                 self.screen.bye()
             if self.snake.hitTail():
                 self.screen.bye()
+            #self.agent.makeMove()
+            self.env.getCurrentState()
             time.sleep(0.05)

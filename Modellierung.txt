@@ -1,5 +1,44 @@
+* = food
++ = snake
+- = snake_head
+0 = leeres feld
+X = wand
+
+// Alle Bewegungsmöglichkeiten sind frei
+       0   
+     ++-0
+       0
+
+// Eine Bewegungsmöglichkeit ist durch eine Wand blockiert
+        0
+      ++-X
+        0
+
+// Eine Bewegungsmöglichkeit führt zu essen
+
+         0
+       ++-*
+         0
+
+Tod = -10000
+Essen = +50
 
 
+Feldgröße:
+    29 x 29 Felder
+
+Darstellung als 2D List befüllen mit aktuellem Zustand nach jedem Move
+
+X enum wall coordinate
+
+[
+X X X X X X X X
+X 0 0 0 0 0 0 X
+X 0 0 0 * 0 0 X
+X + + - 0 0 0 X
+X 0 0 0 0 0 0 X
+X X X X X X X X 
+]
 
 Allgemein:
 
@@ -25,4 +64,3 @@ Modellierung der Welt:
     leere felder = 0
     essen = 2
     wand = -1
-
