@@ -11,8 +11,8 @@ screen.setup(700, 750)
 
 snake = Snake()
 food = Food(snake)
-agent = Agent(snake)
 environment = Environment(snake,food)
+agent = Agent(snake, environment)
 game_logic = Game_logic(snake,screen,agent,food,environment)
 
 screen.listen()
