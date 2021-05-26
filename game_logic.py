@@ -65,11 +65,12 @@ class Game_logic:
             self.snake.move()
             self.checkFoodEaten()
             self.screen.update()
+            time.sleep(0.05)
+            print(self.agent.getDistanceToWall(self.env.walls,self.env.getSnakeHeadFromState(self.env.getCurrentState())))
+   
             if self.wallHit():
                 self.screen.bye()
             if self.snake.hitTail():
                 self.screen.bye()
             ##self.agent.makeMove()
-            print("Snake Tails:   ", self.env.getSnakeTailsFromState(self.env.getCurrentState()))
-
-            time.sleep(0.05)
+            ##print("Snake Tails:   ", self.env.getSnakeTailsFromState(self.env.getCurrentState()))

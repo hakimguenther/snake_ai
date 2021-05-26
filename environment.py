@@ -7,7 +7,9 @@ class Environment:
     def __init__(self,snake, food):
         self.snake = snake
         self.food = food
+        self.walls = []
         self.getStartState()
+        
 
     def getCurrentState(self):
         field = self.getEmptyField()
@@ -47,6 +49,7 @@ class Environment:
             field[i][28] = "X"
             field[0][i] = "X"
             field[28][i] = "X"
+
         return field
 
     def getStartState(self):
@@ -58,7 +61,12 @@ class Environment:
         # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
         # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
         # 1 bis 27 -> Feld im Array
-
+        for i in range(0, 29):
+            self.walls.append((i,0))
+            self.walls.append((i,28))
+            self.walls.append((1,i))
+            self.walls.append((27,i))
+        
         for i in range(len(self.snake.snake_coordinates)):
             x,y = self.snake.snake[i].position()
             x = int(x / 20) + 14
@@ -73,9 +81,6 @@ class Environment:
         x = int(x / 20) + 14
         y = int(-y / 20) + 14
         field[y][x] = "*"
-
-        field[::-1]
-
 
     # 0 - east
     # 90 - north 	
@@ -138,12 +143,12 @@ class Environment:
         if(state != None):
             for i, x in enumerate(state):
                 if "-" in x:
-                    return "Head:          ",i,x.index("-")
+                    return (i,x.index("-"))
 
     def getFoodFromState(self, state):
         for i, x in enumerate(state):
             if "*" in x:
-                return "Food:    ",i, x.index("*")
+                return (i, x.index("*"))
     
     def getSnakeTailsFromState(self, state):
         tails = []
