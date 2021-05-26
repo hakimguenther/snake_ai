@@ -40,6 +40,19 @@ X 0 0 0 0 0 0 X
 X X X X X X X X 
 ]
 
+Stand: Wir haben:
+                List des aktuellen Gamestates
+                List des States nach allen möglichen Actions
+
+Nächster Schritt:
+
+Informationen extrahieren: 
+-snake_head Position
+-list mit koordinaten des tails
+-food koordinate
+-wand koordinate
+
+
 Allgemein:
 
     Essen kriegen hohen Wert
