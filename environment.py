@@ -1,3 +1,4 @@
+from typing import List
 from snake import Snake
 from food import Food
 
@@ -27,16 +28,13 @@ class Environment:
             x,y = self.snake.snake[i].position()
             x = int(x / 20) + 14
             y = int(-y / 20) + 14
-            print(f"x: {x}")
-            print(f"y: {y}")
+
             if i == 0:
                 field[y][x] = "-"
             else:
                 field[y][x] = "+"
             
-        
-        for row in field:
-            print(row)
+        return field
         
     def getEmptyField(self):
         #Initiasierung des field Arrays und befüllen mit leeren Feldern(0)
@@ -50,6 +48,52 @@ class Environment:
             field[0][i] = "X"
             field[28][i] = "X"
         return field
+
+    def getStartState(self):
+
+        field = self.getEmptyField()
+        
+        #Beschaffung der Snake Position und einsetzen in das Field Array
+        #-280 280 -> Begehbares Feld   0 0 -> Mitte des Feldes  (-40,0) (-20,0) (0,0) ->Schlange  ----> Durch 20 Teilen da Körperteilgröße 20
+        # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
+        # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
+        # 1 bis 27 -> Feld im Array
+
+        for i in range(len(self.snake.snake_coordinates)):
+            x,y = self.snake.snake[i].position()
+            x = int(x / 20) + 14
+            y = int(-y / 20) + 14
+            if i == 0:
+                field[y][x] = "-"
+            else:
+                field[y][x] = "+"
+
+        # Beschaffung der food postion und umrechnen auf array wie bei schlangen position
+        x,y = self.food.food.position()
+        x = int(x / 20) + 14
+        y = int(-y / 20) + 14
+        field[y][x] = "*"
+
+        field[::-1]
+
+
+    # 0 - east
+    # 90 - north 	
+    # 180 - west	
+    # 270 - south
+    def getLegalMoves(self):
+        directions = ["north","east","south","west"]
+        
+        if self.snake.snake[0].heading() == 90:
+            directions.remove("south")
+        if self.snake.snake[0].heading() == 180:
+            directions.remove("east")
+        if self.snake.snake[0].heading() == 0:
+            directions.remove("west")
+        if self.snake.snake[0].heading() == 270:
+            directions.remove("north")
+ 
+        return directions    
 
     def getStateFromAction(self,action):
         field = self.getEmptyField()
@@ -71,73 +115,40 @@ class Environment:
             x,y = self.snake.snake[i].position()
             x = int(x / 20) + 14
             y = int(-y / 20) + 14
-
-            for move in moves:
-                if move == "north":
+            if(action in moves):
+                if action == "north":
                     y -= 1
-                    print("We move north")
-                elif move == "south":
+                elif action == "south":
                     y += 1
-                    print("We move north")
-                elif move == "east":
+                elif action == "east":
                     x += 1
-                else:
+                elif action == "west":
                     x -=1
-            print(f"x: {x}")
-            print(f"y: {y}")
+            else:
+                return None
+
+            ##Visualisation of head as "-" and body as "+"        
             if i == 0:
                 field[y][x] = "-"
             else:
-                field[y][x] = "+"
-            
-        
-        for row in field:
-            print(row)
+                field[y][x] = "+"      
+        return field  
 
-    # 0 - east 
-    # 90 - north 	
-    # 180 - west 	
-    # 270 - south 	
-    def getLegalMoves(self):
-        directions = ["north","east","south","west"]
-        
-        if self.snake.snake.heading() == 90:
-            directions.remove("south")
-        if self.snake.snake.heading() == 180:
-            directions.remove("east")
-        if self.snake.snake.heading() == 0:
-            directions.remove("west")
-        if self.snake.snake.heading() == 270:
-            directions.remove("north")
- 
-        return directions
+    def getSnakeHeadFromState(self, state):
+        if(state != None):
+            for i, x in enumerate(state):
+                if "-" in x:
+                    return "Head:          ",i,x.index("-")
 
-    def getStartState(self):
-        field = self.getEmptyField()
-        
-        #Beschaffung der Snake Position und einsetzen in das Field Array
-        #-280 280 -> Begehbares Feld   0 0 -> Mitte des Feldes  (-40,0) (-20,0) (0,0) ->Schlange  ----> Durch 20 Teilen da Körperteilgröße 20
-        # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
-        # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
-        # 1 bis 27 -> Feld im Array
-
-        for i in range(len(self.snake.snake_coordinates)):
-            x,y = self.snake.snake[i].position()
-            x = int(x / 20) + 14
-            y = int(-y / 20) + 14
-            print(f"x: {x}")
-            print(f"y: {y}")
-            if i == 0:
-                field[y][x] = "-"
-            else:
-                field[y][x] = "+"
-
-        # Beschaffung der food postion und umrechnen auf array wie bei schlangen position
-        x,y = self.food.food.position()
-        x = int(x / 20) + 14
-        y = int(-y / 20) + 14
-        field[y][x] = "*"
-
-        field[::-1]
-        for row in field:
-            print(row)
+    def getFoodFromState(self, state):
+        for i, x in enumerate(state):
+            if "*" in x:
+                return "Food:    ",i, x.index("*")
+    
+    def getSnakeTailsFromState(self, state):
+        tails = []
+        for i in range(len(state)):
+            for j in range(len(state[i])):
+                if state[j][i] == "+":
+                    tails.append((j,i))
+        return tails

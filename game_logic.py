@@ -69,6 +69,7 @@ class Game_logic:
                 self.screen.bye()
             if self.snake.hitTail():
                 self.screen.bye()
-            #self.agent.makeMove()
-            self.env.getCurrentState()
+            ##self.agent.makeMove()
+            print("Snake Tails:   ", self.env.getSnakeTailsFromState(self.env.getCurrentState()))
+
             time.sleep(0.05)
