@@ -67,12 +67,9 @@ class Agent:
 
         return minDistance
     
-    ##state 1 = current state
-    ##state 2 = next state with action
-    ##action = action
-    def getReward(self,state1, state2, action):
-        distance_to_wall = self.getDistanceToWall(self.env.getState())
-        if distance_to_wall == 0:
+    #field is the next field for the head after an action
+    def getReward(self, field):
+        if field == "X":
             return -100
         return 1
     
@@ -80,36 +77,35 @@ class Agent:
         max_next_reward = -1000
         best_action = ""
         if r.random() < self.exp_rate:
-            action = r.choice(self.env.getLegalMoves())
+            best_action = r.choice(self.env.getLegalMoves())
         else:
             current_state = self.env.getState()
             for action in self.env.getLegalMoves():
-                if(action == "north"):
-                    ##je nach aktion siehe zu betretenes feld an also: north -> guck dict(north)
-                    
-                    
-                    self.env.getState().close_env["north"]
-                next_state = self.env.getStateFromAction(action)
-                next_reward = self.getReward(current_state,next_state, action)
+                field = self.env.getState().close_env[action]
+                next_reward = self.getReward(field)
                 if next_reward > max_next_reward:
                     max_next_reward = next_reward
                     best_action = action
-                    
         return best_action
     
-    # def play(self):
-    #     self.steps_per_episode = []
+    def play(self):
+        self.steps_per_episode = []
 
-    #     for ep in range(self.episodes):
-    #             action = self.chooseAction()
-    #             self.state_actions.append((current_state, action))
+        action = self.chooseAction()
+        self.state_actions.append((self.env.getState, action))
 
-    #             next_state = self.env.getStateFromAction(action)
-    #             reward = self.getReward(current_state, next_state, action)
-    #             print(reward)
-    #             self.makeMove(action)
-
-    #             self.Q_values[current_state][action] += self.lr * (reward + max(self.Q_values[next_state].values()) - self.Q_values[current_state][action])
-                
-    #             if reward == -100:
-    #                 self.end = True
+        next_state = self.env.getStateFromAction(action)
+        field = self.env.getState().close_env[action]
+        reward = self.getReward(field)
+        #self.makeMove(action)
+        current_state = self.env.getState()
+        
+        if current_state in self.Q_values.keys():
+                if action in self.Q_values[current_state]:
+                    self.Q_values[current_state][action] += 2
+        else:
+            action_dict = {}
+            action_dict[action] = 1
+            self.Q_values[current_state] = action_dict
+        if reward == -100:
+            self.end = True

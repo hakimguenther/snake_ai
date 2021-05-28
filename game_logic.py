@@ -61,15 +61,16 @@ class Game_logic:
         self.gameLoop()
 
     def gameLoop(self):
-        while True:
-            gameState = self.env.getState()
-            print(gameState.__str__())            
+        while True:  
+            self.agent.play()
             self.snake.move()
             self.checkFoodEaten()
             self.screen.update()
-            time.sleep(0.5)
-            self.agent.getDistanceToWall(self.env.getSnakeHeadFromState(self.env.getCurrentState()))
-   
-            if self.snake.hitTail():
-                self.agent.episode+=1
-            ##self.agent.play()
+            time.sleep(0.1)
+
+            if self.wallHit() or self.snake.hitTail():
+                self.screen.bye()
+                for state in self.agent.Q_values.keys():
+                    print(state.__str__())
+            
+            #self.agent.getDistanceToWall(self.env.getSnakeHeadFromState(self.env.getCurrentState()))

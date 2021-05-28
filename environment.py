@@ -61,11 +61,11 @@ class Environment:
         # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
         # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
         # 1 bis 27 -> Feld im Array
-        for i in range(0, 29):
-            self.walls.append((i,0))
-            self.walls.append((i,28))
-            self.walls.append((1,i))
-            self.walls.append((2,i))
+        for i in range(0, 30):
+            self.walls.append((i,-1))
+            self.walls.append((i,29))
+            self.walls.append((-1,i))
+            self.walls.append((29,i))
         
         for i in range(len(self.snake.snake_coordinates)):
             x,y = self.snake.snake[i].position()
@@ -100,44 +100,44 @@ class Environment:
  
         return directions    
 
-    def getStateFromAction(self,action):
-        field = self.getEmptyField()
-        moves = self.getLegalMoves()
+    # def getStateFromAction(self,action):
+    #     field = self.getEmptyField()
+    #     moves = self.getLegalMoves()
 
-        # Beschaffung der food postion und umrechnen auf array wie bei schlangen position
-        x,y = self.food.food.position()
-        x = int(x / 20) + 14
-        y = int(-y / 20) + 14
-        field[y][x] = "*"
+    #     # Beschaffung der food postion und umrechnen auf array wie bei schlangen position
+    #     x,y = self.food.food.position()
+    #     x = int(x / 20) + 14
+    #     y = int(-y / 20) + 14
+    #     field[y][x] = "*"
 
-        #Beschaffung der Snake Position und einsetzen in das Field Array
-        #-280 280 -> Begehbares Feld   0 0 -> Mitte des Feldes  (-40,0) (-20,0) (0,0) ->Schlange  ----> Durch 20 Teilen da Körperteilgröße 20
-        # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
-        # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
-        # 1 bis 27 -> Feld im Array
+    #     #Beschaffung der Snake Position und einsetzen in das Field Array
+    #     #-280 280 -> Begehbares Feld   0 0 -> Mitte des Feldes  (-40,0) (-20,0) (0,0) ->Schlange  ----> Durch 20 Teilen da Körperteilgröße 20
+    #     # -14 bis 14 ->Begehbare Feld  0 0  -> Mitte des Feldes     ----> +14 um durch das Array zu iterieren
+    #     # 0 bis 28 -> begehbares Feld --> 14 14 -> Mitte des Feldes
+    #     # 1 bis 27 -> Feld im Array
         
-        for i in range(len(self.snake.snake_coordinates)):
-            x,y = self.snake.snake[i].position()
-            x = int(x / 20) + 14
-            y = int(-y / 20) + 14
-            if(action in moves):
-                if action == "north":
-                    y -= 1
-                elif action == "south":
-                    y += 1
-                elif action == "east":
-                    x += 1
-                elif action == "west":
-                    x -=1
-            else:
-                return None
+    #     for i in range(len(self.snake.snake_coordinates)):
+    #         x,y = self.snake.snake[i].position()
+    #         x = int(x / 20) + 14
+    #         y = int(-y / 20) + 14
+    #         if(action in moves):
+    #             if action == "north":
+    #                 y -= 1
+    #             elif action == "south":
+    #                 y += 1
+    #             elif action == "east":
+    #                 x += 1
+    #             elif action == "west":
+    #                 x -=1
+    #         else:
+    #             return None
 
-            ##Visualisation of head as "-" and body as "+"        
-            if i == 0:
-                field[y][x] = "-"
-            else:
-                field[y][x] = "+"      
-        return field  
+    #         ##Visualisation of head as "-" and body as "+"        
+    #         if i == 0:
+    #             field[y][x] = "-"
+    #         else:
+    #             field[y][x] = "+"      
+    #     return field  
 
     def getSnakeHeadFromState(self, state):
         if(state != None):
@@ -158,9 +158,18 @@ class Environment:
                     tails.append((j,i))
         return tails
     
+    #Get State as GameSate
+    #Returns current State: Head Position, BodyParts-Position, Food Position, walls and the close environment(1 field in every direction)
     def getState(self):
         
+        #extract snake head and body and normalize the values
         snake_head_position = self.snake.snake[0].position()
+        
+        snake_x, snake_y = snake_head_position
+        snake_y = round(snake_y / 20 + 14)
+        snake_x = round(snake_x / 20 + 14)
+        snake_head_position = snake_x, snake_y
+
         snake_body_coordinates = []
         for i in range(1,len(self.snake.snake)):
             body_x, body_y = self.snake.snake[i].position()
@@ -169,6 +178,8 @@ class Environment:
             body_position = body_x, body_y
             snake_body_coordinates.append(body_position)
         
+
+        #Extracting food position and normalize the values
         food_position = self.food.food.position()
 
         food_x, food_y = food_position
@@ -176,13 +187,8 @@ class Environment:
         food_x = round(food_x / 20 + 14)
         food_position = food_x, food_y
         
-        
-        snake_x, snake_y = snake_head_position
-        snake_y = round(snake_y / 20 + 14)
-        snake_x = round(snake_x / 20 + 14)
-        snake_head_position = snake_x, snake_y
-        
-        
+
+        # look for sorrounding fields and save them as dicts
         left = snake_x - 1, snake_y
         up = snake_x, snake_y +1
         right = snake_x + 1, snake_y
@@ -192,7 +198,7 @@ class Environment:
         
         for i in range(len(directions)):
             if directions[i] in self.walls:
-                elem = "x"
+                elem = "X"
             elif directions[i] in snake_body_coordinates:
                 elem = "+"
             elif directions[i] == food_position:
@@ -209,35 +215,47 @@ class Environment:
             else:
                 close_env["south"] = elem
 
-        return GameState(snake_head_position, food_position,close_env)
+        return GameState(snake_head_position, food_position,close_env, snake_body_coordinates)
 
+
+    #return the state after input of specified action as a GameState
     def getStateFromAction(self, action):
         current_state = self.getState()
+        x,y = current_state.snake_head
+        tempx, tempy = current_state.snake_head
         
         if action == "north":
-            current_state.snake_head[0] += 1
+            tempy += 1
+            current_state.snake_head = tempx, tempy
         elif action == "south":
-            current_state.snake_head[0] -= 1
+            tempy -= 1
+            current_state.snake_head = tempx, tempy
         elif action == "west":
-            current_state.snake_head[1] -= 1
+            tempx -= 1
+            current_state.snake_head = tempx, tempy
         elif action == "east":
-            current_state.snake_head[1] += 1
+            tempx += 1
+            current_state.snake_head = tempx, tempy
         
-        x,y = current_state.snake_head
-
-        #MUSS NOCH UMGERECHNET WERDEN
-        for i in range(1,len(self.snake.snake)):
-            tx,ty = self.snake[i].position()
-            self.snake[i].setpos(x,y)
+        for i in range(1,len(current_state.snake_body)):
+            tx,ty = current_state.snake_body[i]
+            current_state.snake_body[i] = x,y
             x,y = tx,ty
-        
-        #Return current_state mit aktualisierten Schlangenkoordinaten
+
+        return current_state
 
 class GameState:
-    def __init__(self, snake_head, food_position, close_env):
+    def __init__(self, snake_head, food_position, close_env, snake_body):
         self.snake_head = snake_head
         self.food_position = food_position
         self.close_env = close_env
+        self.snake_body = snake_body
     
     def __str__(self) -> str:
-        return "head   ",self.snake_head, "food", self.food_position, "close_env", self.close_env
+        return "head   ",self.snake_head, "food", self.food_position, "close_env", self.close_env, "snake_body", self.snake_body
+
+    def __hash__(self) -> int:
+        return hash(self.snake_head) + hash(self.food_position)
+    
+    def __eq__(self, o: object) -> bool:
+        return self.__class__ == o.__class__ and self.snake_head == o.snake_head and self.food_position == o.food_position 
