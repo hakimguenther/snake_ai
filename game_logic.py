@@ -62,15 +62,14 @@ class Game_logic:
 
     def gameLoop(self):
         while True:
+            gameState = self.env.getState()
+            print(gameState.__str__())            
             self.snake.move()
             self.checkFoodEaten()
             self.screen.update()
-            time.sleep(0.05)
+            time.sleep(0.5)
             self.agent.getDistanceToWall(self.env.getSnakeHeadFromState(self.env.getCurrentState()))
    
-            if self.wallHit():
-                self.screen.bye()
             if self.snake.hitTail():
-                self.screen.bye()
-            self.agent.play()
-            ##print("Snake Tails:   ", self.env.getSnakeTailsFromState(self.env.getCurrentState()))
+                self.agent.episode+=1
+            ##self.agent.play()

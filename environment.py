@@ -65,7 +65,7 @@ class Environment:
             self.walls.append((i,0))
             self.walls.append((i,28))
             self.walls.append((1,i))
-            self.walls.append((27,i))
+            self.walls.append((2,i))
         
         for i in range(len(self.snake.snake_coordinates)):
             x,y = self.snake.snake[i].position()
@@ -157,3 +157,87 @@ class Environment:
                 if state[j][i] == "+":
                     tails.append((j,i))
         return tails
+    
+    def getState(self):
+        
+        snake_head_position = self.snake.snake[0].position()
+        snake_body_coordinates = []
+        for i in range(1,len(self.snake.snake)):
+            body_x, body_y = self.snake.snake[i].position()
+            body_y = round(body_y / 20 + 14)
+            body_x = round(body_x / 20 + 14)
+            body_position = body_x, body_y
+            snake_body_coordinates.append(body_position)
+        
+        food_position = self.food.food.position()
+
+        food_x, food_y = food_position
+        food_y = round(food_y / 20 + 14)
+        food_x = round(food_x / 20 + 14)
+        food_position = food_x, food_y
+        
+        
+        snake_x, snake_y = snake_head_position
+        snake_y = round(snake_y / 20 + 14)
+        snake_x = round(snake_x / 20 + 14)
+        snake_head_position = snake_x, snake_y
+        
+        
+        left = snake_x - 1, snake_y
+        up = snake_x, snake_y +1
+        right = snake_x + 1, snake_y
+        down = snake_x, snake_y -1
+        directions = [left,up,right,down]
+        close_env = {}
+        
+        for i in range(len(directions)):
+            if directions[i] in self.walls:
+                elem = "x"
+            elif directions[i] in snake_body_coordinates:
+                elem = "+"
+            elif directions[i] == food_position:
+                elem = "*"
+            else:
+                elem = "0"
+            
+            if i == 0:
+                close_env["west"] = elem
+            elif i == 1:
+                close_env["north"] = elem
+            elif i == 2:
+                close_env["east"] = elem
+            else:
+                close_env["south"] = elem
+
+        return GameState(snake_head_position, food_position,close_env)
+
+    def getStateFromAction(self, action):
+        current_state = self.getState()
+        
+        if action == "north":
+            current_state.snake_head[0] += 1
+        elif action == "south":
+            current_state.snake_head[0] -= 1
+        elif action == "west":
+            current_state.snake_head[1] -= 1
+        elif action == "east":
+            current_state.snake_head[1] += 1
+        
+        x,y = current_state.snake_head
+
+        #MUSS NOCH UMGERECHNET WERDEN
+        for i in range(1,len(self.snake.snake)):
+            tx,ty = self.snake[i].position()
+            self.snake[i].setpos(x,y)
+            x,y = tx,ty
+        
+        #Return current_state mit aktualisierten Schlangenkoordinaten
+
+class GameState:
+    def __init__(self, snake_head, food_position, close_env):
+        self.snake_head = snake_head
+        self.food_position = food_position
+        self.close_env = close_env
+    
+    def __str__(self) -> str:
+        return "head   ",self.snake_head, "food", self.food_position, "close_env", self.close_env
