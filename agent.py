@@ -3,6 +3,7 @@ import time
 from environment import Environment as env
 from environment import GameState
 import math
+import util
 
 
 class Agent:
@@ -17,9 +18,8 @@ class Agent:
         self.exp_rate = exp_rate
         self.episodes = episodes
         self.lr = lr
-        self.end = False
-
-        
+        self.isEnd = False
+        self.steps_per_episode = []
     
     def makeMove(self, direction):
         if direction == "north":
@@ -31,34 +31,6 @@ class Agent:
         else:
             self.snake.moveLeft()
 
-    # wallPositions = Liste der Positionen der Walls im 28 * 28 list
-    # finde die nächste WallPosition aus der List
-    # berechne Distanz zu nächsten wall
-    # euclide 
-    
-    # def getDistanceToWall(self, headPosition):
-    #     # wände immer bei 0 und 29 ( auf x und y)
-    #     # headPosition = 14,15
-    #     # nächste Wall = 14, 28
-    #     min_distance = 1000
-
-    #     if headPosition != None:
-    #         head_y , head_x = headPosition
-    #         if(abs(head_y - 14) > abs(head_x - 14)):
-    #             if head_y > 14:
-    #                 min_distance = 28 - head_y
-    #             else:
-    #                 min_distance = head_y
-    #         else:
-    #             if head_x > 14:
-    #                 min_distance = 28 - head_x
-    #             else:
-    #                 min_distance = head_x
-    #     else:
-    #         headPosition = 1,1 
-
-    #     return min_distance
-
     def getDistanceToWall(self,gameState: GameState):
         minDistance = 1
 
@@ -68,44 +40,96 @@ class Agent:
         return minDistance
     
     #field is the next field for the head after an action
-    def getReward(self, field):
+    #state is the next state which reward is calculated
+    def getReward(self, field, state):
+        food_x, food_y = state.food_position
+        snake_x, snake_y = state.snake_head
+        distance = util.euclideDistance((food_x,food_x),(snake_x, snake_y))
+        distanceReward = 50 - distance
+        if distance < 2:
+            return 200
         if field == "X":
             return -100
-        return 1
+        return distanceReward
     
     def chooseAction(self):
         max_next_reward = -1000
         best_action = ""
+        next_reward = -100
+
         if r.random() < self.exp_rate:
             best_action = r.choice(self.env.getLegalMoves())
         else:
             current_state = self.env.getState()
             for action in self.env.getLegalMoves():
-                field = self.env.getState().close_env[action]
-                next_reward = self.getReward(field)
+                if current_state in self.Q_values.keys():
+                    if action in self.Q_values[current_state]:
+                        next_reward = self.Q_values[current_state][action]
+                else:
+                    next_reward = 0 
+
                 if next_reward > max_next_reward:
                     max_next_reward = next_reward
                     best_action = action
+
         return best_action
-    
+ 
     def play(self):
-        self.steps_per_episode = []
+        if not self.isEnd:
+            action = self.chooseAction()
 
-        action = self.chooseAction()
-        self.state_actions.append((self.env.getState, action))
+            current_state = self.env.getState()
+            self.steps_per_episode.append([current_state, action])
+            self.makeMove(action)
 
-        next_state = self.env.getStateFromAction(action)
-        field = self.env.getState().close_env[action]
-        reward = self.getReward(field)
-        #self.makeMove(action)
-        current_state = self.env.getState()
-        
-        if current_state in self.Q_values.keys():
-                if action in self.Q_values[current_state]:
-                    self.Q_values[current_state][action] += 2
+            field = self.env.getState().close_env[action]
+            reward = self.getReward(field, self.env.getStateFromOnlyAction(action))           
+            
+            if reward == -100:
+                self.isEnd = True
+
         else:
-            action_dict = {}
-            action_dict[action] = 1
-            self.Q_values[current_state] = action_dict
-        if reward == -100:
-            self.end = True
+            #death is always -100 reward
+            reward = -100
+            current_state = self.env.getState
+            for a in self.env.getLegalMoves():
+                     
+                if current_state in self.Q_values.keys():
+                    if a in self.Q_values[current_state]:
+                        self.Q_values[current_state][a] = reward
+                else:
+                    action_dict = {}
+                    action_dict[a] = reward
+                    self.Q_values[current_state] = action_dict
+
+            ## speichern aktuelles qvalue
+            ## ersetzen erst nach berechnung des vorherigen q values
+            for s in reversed(self.steps_per_episode):
+                if s[0] in self.Q_values.keys():
+                    if s[1] in self.Q_values[s[0]]:
+                        current_q_value = self.Q_values[s[0]][s[1]]
+                        field =s[0].close_env[s[1]]
+                        r = self.getReward(field,self.env.getStateFromAction(s[1],s[0]))
+                        max_q_nxt = 0
+                        for a in self.env.getLegalMoves():
+                            if s[0] in self.Q_values.keys():
+                                if a in self.Q_values[current_state]:
+                                    if max_q_nxt > self.Q_values[current_state][a]:
+                                        max_q_nxt = self.Q_values[current_state][a]
+                            else:
+                                action_dict = {}
+                                action_dict[a] = 0
+                                self.Q_values[current_state] = action_dict
+
+                        reward = current_q_value + self.lr * (r + 0.8 * max_q_nxt - current_q_value)
+                        self.Q_values[s[0]][s[1]] = round(reward, 3)
+                        print("Q_Value:   ", self.Q_values[s[0]][s[1]])
+                else:
+                    action_dict = {}
+                    action_dict[s[1]] = 0
+                    self.Q_values[s[0]] = action_dict
+                    print("Q_Value:   ", self.Q_values[s[0]][s[1]])
+
+            self.steps_per_episode.clear()
+            self.isEnd = False
+            return -1

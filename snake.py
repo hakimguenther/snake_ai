@@ -7,7 +7,7 @@ class Snake:
         self.snake_coordinates = []
         for i in range(3):
             snake_part = turtle.Turtle("square")
-            snake_part.color("white")
+            snake_part.color("green")
             snake_part.penup()
             snake_part.setpos(-i * 20,0)
             snake_part.speed(6)
@@ -22,7 +22,7 @@ class Snake:
 
     def addPart(self):
         snake_part = turtle.Turtle("square")
-        snake_part.color("white")
+        snake_part.color("green")
         snake_part.speed(6)
         snake_part.penup()
         last_x, last_y = self.snake[-1].position()
@@ -60,3 +60,17 @@ class Snake:
     def moveDown(self):
         if self.snake[0].heading() !=  90:
             self.snake[0].setheading(270)
+
+    def reset(self):
+        self.snake_coordinates = []
+        for snake in self.snake:
+            snake.ht()
+        self.snake = [] 
+        for i in range(3):
+            snake_part = turtle.Turtle("square")
+            snake_part.color("green")
+            snake_part.penup()
+            snake_part.setpos(-i * 20,0)
+            snake_part.speed(6)
+            self.snake_coordinates.append(snake_part.position())
+            self.snake.append(snake_part)

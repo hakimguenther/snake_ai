@@ -219,8 +219,33 @@ class Environment:
 
 
     #return the state after input of specified action as a GameState
-    def getStateFromAction(self, action):
+    def getStateFromOnlyAction(self, action):
         current_state = self.getState()
+        x,y = current_state.snake_head
+        tempx, tempy = current_state.snake_head
+        
+        if action == "north":
+            tempy += 1
+            current_state.snake_head = tempx, tempy
+        elif action == "south":
+            tempy -= 1
+            current_state.snake_head = tempx, tempy
+        elif action == "west":
+            tempx -= 1
+            current_state.snake_head = tempx, tempy
+        elif action == "east":
+            tempx += 1
+            current_state.snake_head = tempx, tempy
+        
+        for i in range(1,len(current_state.snake_body)):
+            tx,ty = current_state.snake_body[i]
+            current_state.snake_body[i] = x,y
+            x,y = tx,ty
+
+        return current_state
+
+    def getStateFromAction(self, action, state):
+        current_state = state
         x,y = current_state.snake_head
         tempx, tempy = current_state.snake_head
         
@@ -258,4 +283,4 @@ class GameState:
         return hash(self.snake_head) + hash(self.food_position)
     
     def __eq__(self, o: object) -> bool:
-        return self.__class__ == o.__class__ and self.snake_head == o.snake_head and self.food_position == o.food_position 
+        return self.__class__ == o.__class__ and self.snake_head == o.snake_head and self.food_position == o.food_position

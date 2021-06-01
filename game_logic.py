@@ -1,6 +1,8 @@
+from snake import Snake
 import turtle 
 import random as r
 import time
+from food import Food
 from environment import Environment as env
 
 class Game_logic:
@@ -58,19 +60,30 @@ class Game_logic:
                         text=f"Your Score: {0}")
         self.food.placeFood()
         self.createWall()
-        self.gameLoop()
-
+        i = 1
+        while i <= 1000:
+            print("Episode: ", i)
+            self.gameLoop()
+            i += 1
+            self.agent.exp_rate -= 0.0001
+    
     def gameLoop(self):
-        while True:  
-            self.agent.play()
+        print("in Method gameloop")
+        num = 0
+        while num != -1:  
+            num = self.agent.play()
             self.snake.move()
             self.checkFoodEaten()
             self.screen.update()
-            time.sleep(0.1)
-
-            if self.wallHit() or self.snake.hitTail():
-                self.screen.bye()
-                for state in self.agent.Q_values.keys():
-                    print(state.__str__())
+        #snake zurücksetzen
+        #punkte zurücksetzen
+        #food random platzieren
+        self.snake.reset()
+        self.food.placeFood()
+        self.score = 0
+            # if self.wallHit() or self.snake.hitTail():
+            #     self.screen.bye()
+            # for state in self.agent.Q_values.keys():
+            #     print(state.__str__())
             
             #self.agent.getDistanceToWall(self.env.getSnakeHeadFromState(self.env.getCurrentState()))
